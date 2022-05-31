@@ -1,0 +1,21 @@
+begin camera_parameters ZenmuseP1_35.0_8192x5460 (RGB)(1)
+ focal_length:                      35.00990619854978547210
+ ppac:                              -0.07674948000134670933 -0.09266541340780455605
+ ppbs:                               0 0
+ film_format:                       23.32763159999999658112 34.99999231999999693699
+ lens_distortion_flag:              off
+ io_required:                       yes
+ camera_type:                       frame
+ media_type:                        digital
+ pixel_size:                        4.27245999999999970242 4.27245999999999970242
+ image_size_in_pixels:              5460 8192
+ scanline_orientation:              4
+ photo_coord_sys_orientation:       1
+ photo_coord_sys_origin:            2729.50000000000000000000 4095.50000000000000000000
+ focal_length_calibration_flag:     off
+ calibrated_focal_length_stddev:    0.03
+ ppac_calibration_flag:             off
+ calibrated_ppac_stddevs:           0.003   0.003
+ self_calibration_enabled_params:   0
+ antenna_offsets:                   0   0   0
+end camera_parameters
