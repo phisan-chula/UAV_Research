@@ -1,13 +1,13 @@
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ข้อมูลจากไลดาร์ Riegl Mini-VUX บินด้วย ULS บันทึกข้อมูลตามแนวสายส่ง ตัวอย่างข้างล่างเป็นข้อมูลในส่วนที่ตัดขวางออกมาจากแนวสายส่งไฟฟ้าศักย์สูง ในการวิเคราะห์พ็อยคลาวได้อ่าน return_number และ number_of_returns มาทั้งหมดแล้วแสดงภาพเป็นรหัสสีต่างๆ พ็อยคลาวชุดนี้ เลเซอร์ Mini-VUX มีการสะท้อนค่อนข้างสมบูรณ์โดยดูจากความสามารถตรวจจับการสท้อนกลับครบ 4 returns</br>
-(Pdb++) dfX.return_number.value_counts()
-1    46484
-4     5849
-2     5795
-3      260
-Name: return_number, dtype: int64
-(Pdb++) dfX.number_of_returns.value_counts()
-4    58388
-Name: number_of_returns, dtype: int64
+(Pdb++) dfX.return_number.value_counts()</br>
+1    46484</br>
+4     5849</br>
+2     5795</br>
+3      260</br>
+Name: return_number, dtype: int64</br>
+(Pdb++) dfX.number_of_returns.value_counts()</br>
+4    58388</br>
+Name: number_of_returns, dtype: int64</br>
 </br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;เมื่อตรวจสอบ 4th returns (of 4 returns) โดยส่วนใหญ่ พ็อยคลาวตกบนพื้นดินตามคาด มีจำนวหนึงสัก...หลายเปอร์เซนต์ สะท้อนกลับจาก พุ้มไม้ ต้นไม้เตี้ย บ้าง ปรากฏเป็นสีม่วง return_number=4 ในภาพ </br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ทั้งนี้การประเมินครั้งนี้เป็นการประเมินข้อมูลพ็อยคลาวด์จากเครื่องเลเซอร์สแกนทีมีประสิทธิภาพสูง ข้อมูลพ็อยคลาวจากระบบต่างๆ อาจได้ผลแตกต่างไปจากนี้  โดยเฉพาะระบบเลเซอร์ที่มีราคาและคุณภาพไม่สูงมากนัก</br>
