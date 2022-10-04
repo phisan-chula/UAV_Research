@@ -4,5 +4,5 @@
 ![พ็อยคลาวด์แสดงสีตามลำดับการสท้อน](https://github.com/phisan-chula/UAV_Research/blob/main/LidarReturn/LidarReturn1.png)
 ![พ็อยคลาวด์แสดงสีตามลำดับการสท้อน](https://github.com/phisan-chula/UAV_Research/blob/main/LidarReturn/LidarReturn2.png)
 
+![พ็อยคลาวด์แสดงสีตามลำดับการสท้อน](https://github.com/phisan-chula/UAV_Research/blob/main/LidarReturn/Lidar_ColorHeight.png)
 ![พ็อยคลาวด์แสดงสีตามการจำแนกสายเคเบิ้ล](https://github.com/phisan-chula/UAV_Research/blob/main/LidarReturn/Lidar_ColorCableN.png)
-![พ็อยคลาวด์แสดงสีตามลำดับการสท้อน](https://github.com/phisan-chula/UAV_Research/blob/main/LidarReturn/LidarReturn2.png)
