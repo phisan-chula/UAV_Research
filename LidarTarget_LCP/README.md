@@ -1,7 +1,37 @@
- EstimLCP : estimate position of an LCP by optiminzing planes of a 
-              Gabel roof. EstimLCP make use of RANSAC to reject point-
-              cloud anomally and uncertain low-quality point-cloud from
+ EstimLCP : estimate position of an LCP by optiminzing planes of a /br   
+              Gabel roof. EstimLCP make use of RANSAC to reject point-/br   
+              cloud anomally and uncertain low-quality point-cloud from/br   
               the ULS.
+Example result :-/br              
+========================== LCP : LCP-1 ==============================
+Reading point cloud by flight-line : "CU_CHC_AU20/AU20_80mHeight/20220819114421000.las"... 
+Reading cached "CACHE/gdfCIRCLE.pkl" ...
+Point cloud on target circle : 4,259 
+Target circle size (meter) : 3.3 x 3.3 
+Plotting CACHE/Plot_Target.svg...
+Fit plane "L" outliers : 5.8% (32/553)
+Fit plane "R" outliers : 10.5% (30/285)
+LCP-1 : L  ridge length = 1.113 m,  az = 97.5 deg , slope=+0.02 m
+LCP-1 : R  ridge length = 1.110 m,  az = 97.5 deg , slope=+0.02 m
+LCP-1 : LR ridge length = 1.116 m,  az = 97.5 deg , slope=+0.02 m
+Input LCP-1  L=1.22 : 665,572.180, 1,519,337.160 m  AZ:96.0 deg
+Estimate LCP-1 :      665,572.160, 1,519,337.179, 1.328 m
+Plotting CACHE/Plot_Target.svg...
+========================== LCP : LCP-1 ==============================
+Reading point cloud by flight-line : "CU_CHC_AU20/AU20_80mHeight/20220819114527002.las"... 
+Reading cached "CACHE/gdfCIRCLE.pkl" ...
+Point cloud on target circle : 4,259 
+Target circle size (meter) : 3.3 x 3.3 
+Plotting CACHE/Plot_Target.svg...
+Fit plane "L" outliers : 5.8% (32/556)
+Fit plane "R" outliers : 10.5% (30/287)
+LCP-1 : L  ridge length = 1.110 m,  az = 97.2 deg , slope=+0.02 m
+LCP-1 : R  ridge length = 1.110 m,  az = 97.2 deg , slope=+0.02 m
+LCP-1 : LR ridge length = 1.117 m,  az = 97.2 deg , slope=+0.02 m
+Input LCP-1  L=1.22 : 665,572.200, 1,519,337.160 m  AZ:96.0 deg
+Estimate LCP-1 :      665,572.159, 1,519,337.181, 1.328 m
+Plotting CACHE/Plot_Target.svg...
+
 
 ![LCP Color by Height](https://github.com/phisan-chula/UAV_Research/blob/main/LidarTarget_LCP/Plot_Target_Hgt.svg)
 
