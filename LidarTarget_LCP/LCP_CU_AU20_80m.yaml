@@ -1,0 +1,26 @@
+#
+# configuration and data file for lidar control plane
+#
+# LCP defintion
+BASE  : 1.100     # m separation of the two planes from field
+WIDTH : 0.65     # m  of the future board
+LENGTH : 1.220   # m  of the future board
+#
+#
+BUFF_RIDGE : 1.4   # %buffer from actual LCP size
+BUFF_LFRT : 0.75   # %buffer to the left&right of  LCP ridge line 
+#
+# Lidar sensor response via "pyransac3d"
+MINPOINTS : 100
+THRESH    : 0.03   # meter
+MAXITER   : 1000
+#
+#
+# List of LCPs, X,Y coordinate and it orientation azimuth
+#
+#
+FLIGHT_LINE : 
+        CU_CHC_AU20/AU20_80mHeight/20220819114421000.las:
+                - [ LCP-1, 665572.18, 1519337.16, 96 ]
+        CU_CHC_AU20/AU20_80mHeight/20220819114527002.las: 
+                - [ LCP-1, 665572.20, 1519337.16, 96 ]
