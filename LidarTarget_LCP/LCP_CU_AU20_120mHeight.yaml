@@ -1,3 +1,4 @@
+VERSION = "0.3"
 #
 # configuration and data file for lidar control plane
 #
@@ -8,11 +9,11 @@ LENGTH : 1.220   # m  of the future board
 #
 #
 BUFF_RIDGE : 1.1   # %buffer from actual LCP size
-BUFF_LFRT  : 0.8   # %buffer to the left&right of  LCP ridge line 
+BUFF_LFRT  : [0.2,0.8]   # %buffer to the left&right of  LCP ridge line 
 #
 # Lidar sensor response via "pyransac3d"
 MINPOINTS : 50
-THRESH    : 0.01   # meter
+THRESH    : 0.03   # meter
 MAXITER   : 1000
 #
 #

@@ -7,8 +7,8 @@
 #
 #  Author: Phisan Santitamnont
 #          Faculty of Engineer, Chulalongkorn University
-#  History : 16 Oct 2022 : initial , version 0.2
-#
+#  History : 16 Oct 2022 : initial
+VERSION = "0.3"
 import pandas as pd
 import geopandas as gpd
 import numpy as np 
@@ -58,11 +58,16 @@ class GableRoof:
                     TITLE=f'Target {LCP[0]:.1f},{LCP[1]:.1f}  Circle {self.BUFF_CIRC:.1f}m')
         ##################################################################
         BFLR, BFRD = self.YAML['BUFF_LFRT'], self.YAML['BUFF_RIDGE']
-        Ridge = shpgeom.LineString( [(0,-BFRD*LEN/2),(0,+BFRD*LEN/2) ]) 
-        rot = affinity.translate( Ridge, xoff=X, yoff=Y )
-        Ridge = affinity.rotate( rot, -AZI, origin=(X,Y), use_radians=True)
-        polyL = Ridge.buffer( +BFLR*BAS/2, cap_style=2, single_sided=True )
-        polyR = Ridge.buffer( -BFLR*BAS/2, cap_style=2, single_sided=True )
+        def RoofPanel( side ):
+            SG = {'L':-1,'R':+1 } 
+            x0 = SG[side]*(BAS/2)*BFLR[0] ; x1 = SG[side]*(BAS/2)*BFLR[1]
+            ridge = shpgeom.LineString( [(x0,-BFRD*LEN/2),(x0,+BFRD*LEN/2) ]) 
+            poly = ridge.buffer( x0-x1, cap_style=2, single_sided=True )
+            poly = affinity.translate( poly, xoff=X, yoff=Y )
+            poly = affinity.rotate( poly, -AZI, origin=(X,Y), use_radians=True)
+            return poly
+        polyL= RoofPanel('L'); polyR= RoofPanel('R')
+        #plt.plot(*polyL.exterior.xy); plt.plot(*polyR.exterior.xy) ; plt.show()
         dfpoly = pd.DataFrame( {'SIDE':['L','R'],'geometry':[polyL,polyR] } )
         gdfpoly = gpd.GeoDataFrame( dfpoly, crs='epsg:32647', geometry=dfpoly.geometry )
         gdfPC = gpd.sjoin( gdfCIRC, gdfpoly, how='inner', predicate='intersects')
@@ -172,6 +177,7 @@ if __name__=="__main__":
             help='limit processing only LCP ,otherwise process all LCPs')
     ARGS = parser.parse_args()
     gr = GableRoof( ARGS )
+    assert( gr.YAML['VERSION']==VERSION ) 
     lcp = list()   # restructure YAML a bit
     for k,v in gr.YAML['FLIGHT_LINE'].items():
         df = pd.DataFrame( v,  columns=['LCP', 'x','y','azi'] )
