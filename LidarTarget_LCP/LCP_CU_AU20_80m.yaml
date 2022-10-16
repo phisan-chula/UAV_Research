@@ -3,7 +3,6 @@ VERSION : "0.3"
 # configuration and data file for lidar control plane
 #
 # LCP defintion
-VERSION : "1"
 #
 BASE  : 1.100     # m separation of the two planes from field
 WIDTH : 0.65     # m  of the future board
