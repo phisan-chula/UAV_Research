@@ -50,9 +50,10 @@ class GableRoof:
             gdfCIRC = self.ReadTarget_CACHE( self.FLT_LINE, X, Y )
         else:
             gdfCIRC = self.ReadTarget( self.FLT_LINE, X, Y )
-        print( f'Point cloud on target circle : {len(gdfCIRC):,} ' )
         bnd =gdfCIRC.total_bounds
+        pnt_sqm = len(gdfCIRC)/((bnd[2]-bnd[0])*(bnd[3]-bnd[1]) )
         print( f'Target circle size (meter) : {bnd[2]-bnd[0]:.1f} x {bnd[3]-bnd[1]:.1f} ' )
+        print( f'Point cloud on target circle : {len(gdfCIRC):,} ({pnt_sqm:.1f} pnt/sqm)')
         if ARGS.plot: self.PlotRoof([LCP[0],LCP[1],gdfCIRC.z.max()],gdfCIRC,
                     TITLE=f'Target {LCP[0]:.1f},{LCP[1]:.1f}  Circle {self.BUFF_CIRC:.1f}m')
         ##################################################################
@@ -133,23 +134,23 @@ class GableRoof:
         cm = plt.cm.get_cmap('RdYlBu_r')  # color by height (Z)
         fig = plt.figure(figsize=(15,15))
         ax = fig.add_subplot(111, projection='3d')
-        COL = { 'L':'r', 'R':'g'}
+        COL = { 'L':'r', 'R':'g'} ; MARKER = { 'L':'+', 'R':'x'} 
         if 'SIDE' in dfPnt.columns:
             for side in COL.keys():  #  L / R planar
                 pnt = dfPnt[dfPnt.SIDE==side]
                 ax.scatter( pnt.x, pnt.y, pnt.z, c=COL[side], alpha=0.7 )
             if 'inlier' in dfPnt.columns:
                 pnt = dfPnt[dfPnt.inlier!=True]
-                ax.scatter( pnt.x, pnt.y, pnt.z, c='k', marker='x', alpha=0.3, s=100 )
+                ax.scatter( pnt.x, pnt.y, pnt.z, c='k', marker='x', alpha=0.5, s=120 )
         else:
-            sc = ax.scatter( dfPnt.x, dfPnt.y, dfPnt.z,c=dfPnt.z, cmap=cm, s=10, marker='o')
+            sc = ax.scatter( dfPnt.x,dfPnt.y,dfPnt.z,c=dfPnt.z,cmap=cm,s=10,marker='o')
             cbar = plt.colorbar( sc )
         ax.scatter( *PntXYZ, c='b', s=400, alpha=0.5 )
         if RIDGE is not None:
             for side,col in COL.items():
                 pnt = sko.Points( RIDGE[RIDGE.SIDE==side][XYZ].to_numpy() )
-                ax.scatter( pnt[:,0],pnt[:,1],pnt[:,2], s=300, 
-                        fc='none', ec=col, alpha=0.3 )  
+                ax.scatter( pnt[:,0],pnt[:,1],pnt[:,2], s=300, lw=0.5,
+                            marker=MARKER[side],color=col, alpha=0.7 )  
         ax.set_box_aspect((1, 1, Z_ASPECT)) 
         ax.set_xlabel('X axis'); ax.set_ylabel('Y axis'); ax.set_zlabel('Z axis')
         ax.set_title( TITLE )
@@ -201,12 +202,11 @@ if __name__=="__main__":
         x,y,z = (df.iloc[0]+df.iloc[-1])/2 # from last loop above
         result.append( [ row.LCP, x, y, z, Path(row.FLIGHT_LINE).stem ] )
         print( f'Best estimate {row.LCP} : {x:,.3f}, {y:,.3f}, {z:.3f} m')
+        TITLE = f'{row.LCP}@{Path(row.FLIGHT_LINE)}'
         PLOT_FILE = f'CACHE/{row.LCP}_{Path(row.FLIGHT_LINE).stem}.svg'
-        gr.PlotRoof( dfRIDGE[XYZ].mean(), gdfPC, dfRIDGE,
-                        TITLE=PLOT_FILE, PLOT_FILE=PLOT_FILE )
+        gr.PlotRoof( dfRIDGE[XYZ].mean(),gdfPC,dfRIDGE,TITLE=TITLE,PLOT_FILE=PLOT_FILE)
         if ARGS.plot:
-            gr.PlotRoof( dfRIDGE[XYZ].mean(), gdfPC, dfRIDGE, 
-                        TITLE=PLOT_FILE, PLOT_FILE=None )
+            gr.PlotRoof( dfRIDGE[XYZ].mean(),gdfPC,dfRIDGE,TITLE=TITLE,PLOT_FILE=None)
     dfRESULT = pd.DataFrame( result, columns=['Name','x','y','z', 'FlighLine'] )
     gdfRESULT = gpd.GeoDataFrame( dfRESULT, crs='epsg:32647', 
                         geometry=gpd.points_from_xy( dfRESULT.x, dfRESULT.y ) )

@@ -12,7 +12,7 @@ BUFF_LFRT : 0.75   # %buffer to the left&right of  LCP ridge line
 #
 # Lidar sensor response via "pyransac3d"
 MINPOINTS : 100
-THRESH    : 0.03   # meter
+THRESH    : 0.02   # meter
 MAXITER   : 1000
 #
 #
