@@ -7,7 +7,7 @@
 #
 #  Author: Phisan Santitamnont
 #          Faculty of Engineer, Chulalongkorn University
-#  History : 15 Oct 2022 : initial , version 0.1
+#  History : 16 Oct 2022 : initial , version 0.2
 #
 import pandas as pd
 import geopandas as gpd
@@ -56,7 +56,7 @@ class GableRoof:
         if ARGS.plot: self.PlotRoof([LCP[0],LCP[1],gdfCIRC.z.max()],gdfCIRC,
                     TITLE=f'Target {LCP[0]:.1f},{LCP[1]:.1f}  Circle {self.BUFF_CIRC:.1f}m')
         ##################################################################
-        BFLR = self.YAML['BUFF_LFRT'];  BFRD = self.YAML['BUFF_RIDGE']
+        BFLR, BFRD = self.YAML['BUFF_LFRT'], self.YAML['BUFF_RIDGE']
         Ridge = shpgeom.LineString( [(0,-BFRD*LEN/2),(0,+BFRD*LEN/2) ]) 
         rot = affinity.translate( Ridge, xoff=X, yoff=Y )
         Ridge = affinity.rotate( rot, -AZI, origin=(X,Y), use_radians=True)
@@ -66,9 +66,10 @@ class GableRoof:
         gdfpoly = gpd.GeoDataFrame( dfpoly, crs='epsg:32647', geometry=dfpoly.geometry )
         gdfPC = gpd.sjoin( gdfCIRC, gdfpoly, how='inner', predicate='intersects')
         gdfPC.reset_index( drop=True, inplace=True)
-        #if ARGS.plot:
-        #    self.PlotRoof( [LCP[0],LCP[1],gdfPC.z.max()] ,gdfPC )
         gdfPC.drop(['index_right'],axis=1,inplace=True )
+        #if ARGS.plot:
+        #    self.PlotRoof( [LCP[0],LCP[1],gdfPC.z.max()] ,gdfPC,
+        #                        TITLE='partioning roof into two planes' )
         gdfPC, dfRIDGE = self.FitRoof( gdfPC ) 
         return gdfPC, dfRIDGE 
 
@@ -127,7 +128,7 @@ class GableRoof:
         return gdfPC, dfRIDGE
 
     ########################################################################
-    def PlotRoof(self, PntXYZ ,dfPnt,RIDGE=None, TITLE=None ):
+    def PlotRoof(self,PntXYZ,dfPnt,RIDGE=None,TITLE=None,PLOT_FILE=None ):
         Z_ASPECT = 0.5
         cm = plt.cm.get_cmap('RdYlBu_r')  # color by height (Z)
         fig = plt.figure(figsize=(15,15))
@@ -139,42 +140,50 @@ class GableRoof:
                 ax.scatter( pnt.x, pnt.y, pnt.z, c=COL[side], alpha=0.7 )
             if 'inlier' in dfPnt.columns:
                 pnt = dfPnt[dfPnt.inlier!=True]
-                ax.scatter( pnt.x, pnt.y, pnt.z, c='k', marker='x', alpha=0.7, s=100 )
+                ax.scatter( pnt.x, pnt.y, pnt.z, c='k', marker='x', alpha=0.3, s=100 )
         else:
             sc = ax.scatter( dfPnt.x, dfPnt.y, dfPnt.z,c=dfPnt.z, cmap=cm, s=10, marker='o')
             cbar = plt.colorbar( sc )
         ax.scatter( *PntXYZ, c='b', s=400, alpha=0.5 )
         if RIDGE is not None:
             for side,col in COL.items():
-                sko_pnt = sko.Points( RIDGE[RIDGE.SIDE==side][XYZ].to_numpy() )
-                sko_pnt.plot_3d( ax,s=150, alpha=0.3, color=col )
+                pnt = sko.Points( RIDGE[RIDGE.SIDE==side][XYZ].to_numpy() )
+                ax.scatter( pnt[:,0],pnt[:,1],pnt[:,2], s=300, 
+                        fc='none', ec=col, alpha=0.3 )  
         ax.set_box_aspect((1, 1, Z_ASPECT)) 
         ax.set_xlabel('X axis'); ax.set_ylabel('Y axis'); ax.set_zlabel('Z axis')
-        plt.suptitle( TITLE )
-        #plt.savefig('CACHE/Plot_Target.svg')
-        plt.show()
+        ax.set_title( TITLE )
+        if PLOT_FILE is None: plt.show()
+        else: print(f'Plotting {PLOT_FILE}...'); plt.savefig(PLOT_FILE)
+        plt.clf(); plt.close()
 
 #######################################################################
 if __name__=="__main__":
     parser = argparse.ArgumentParser(description=\
             'Detect and estimate 3D coordinate of a Gable-roof Lidar Control Plane(LCP)')
-    parser.add_argument( 'YAML', help="input YAML file", type=argparse.FileType('r') )
-    parser.add_argument('-c','--cache', action='store_true', help='caching the circled target, FOR DEBUGGING only')
-    parser.add_argument('-p','--plot', action='store_true', help='plot 3d target and point cloud')
-    parser.add_argument('-l','--lcp', action='store', help='LCP name to compute,otherwise all LCPs')
+    parser.add_argument( 'YAML',  type=argparse.FileType('r'),
+            help="input YAML configuration file for LCP detection and positioning" )
+    parser.add_argument('-c','--cache', action='store_true', 
+            help='caching the circled target, for DEBUG only !!!')
+    parser.add_argument('-p','--plot', action='store_true', 
+            help='plot 3d LCP target and point cloud')
+    parser.add_argument('-l','--lcp', action='store', 
+            help='limit processing only LCP ,otherwise process all LCPs')
     ARGS = parser.parse_args()
     gr = GableRoof( ARGS )
-    lcp = list()
+    lcp = list()   # restructure YAML a bit
     for k,v in gr.YAML['FLIGHT_LINE'].items():
-        #print( k,v)
         df = pd.DataFrame( v,  columns=['LCP', 'x','y','azi'] )
         df['FLIGHT_LINE'] = k
         lcp.append( df )
     dfLCP = pd.concat( lcp, axis=0, ignore_index=True )
-
-    ##############################################################
     if ARGS.lcp is not None:
         dfLCP = dfLCP[dfLCP['LCP']==ARGS.lcp]
+    ##############################################################
+    if not Path('./CACHE').exists():
+        Path('./CACHE').mkdir(parents=True, exist_ok=True)
+    #import pdb; pdb.set_trace()
+    result = list()
     for i,row in dfLCP.iterrows(): 
         print(f'========================== LCP : {row.LCP} ==============================')
         gdfPC, dfRIDGE =  gr.DoEstimateLCP( [row.x,row.y,row.azi] , row.FLIGHT_LINE )
@@ -190,10 +199,20 @@ if __name__=="__main__":
             print( f'{row.LCP} : {side:2s} ridge length = {L:.3f} m,  az = {az:.1f} deg , slope={dz:+.2f} m')
         print( f'Input {row.LCP}  L={gr.YAML["LENGTH"]} : {row.x:,.3f}, {row.y:,.3f} m  AZ:{row.azi:.1f} deg')
         x,y,z = (df.iloc[0]+df.iloc[-1])/2 # from last loop above
-        print( f'Estimate {row.LCP} :      {x:,.3f}, {y:,.3f}, {z:.3f} m')
+        result.append( [ row.LCP, x, y, z, Path(row.FLIGHT_LINE).stem ] )
+        print( f'Best estimate {row.LCP} : {x:,.3f}, {y:,.3f}, {z:.3f} m')
+        PLOT_FILE = f'CACHE/{row.LCP}_{Path(row.FLIGHT_LINE).stem}.svg'
+        gr.PlotRoof( dfRIDGE[XYZ].mean(), gdfPC, dfRIDGE,
+                        TITLE=PLOT_FILE, PLOT_FILE=PLOT_FILE )
         if ARGS.plot:
             gr.PlotRoof( dfRIDGE[XYZ].mean(), gdfPC, dfRIDGE, 
-                                TITLE='{row.FLIGHT_LINE} @ {row.LCP}' )
- 
-        #import pdb; pdb.set_trace()
+                        TITLE=PLOT_FILE, PLOT_FILE=None )
+    dfRESULT = pd.DataFrame( result, columns=['Name','x','y','z', 'FlighLine'] )
+    gdfRESULT = gpd.GeoDataFrame( dfRESULT, crs='epsg:32647', 
+                        geometry=gpd.points_from_xy( dfRESULT.x, dfRESULT.y ) )
+    RESULT_FILE =  f'CACHE/{Path(ARGS.YAML.name).stem}_RESULT' 
+    print( f'Writing result "{RESULT_FILE}" +[CSV/GPKG]  ...')
+    dfRESULT.to_csv( RESULT_FILE+'.csv', index_label='Index',float_format='%.3f' )
+    gdfRESULT.to_file( RESULT_FILE+'.gpkg', driver='GPKG', layer='LCP_FlightLine'  )
+    #import pdb; pdb.set_trace()
 
