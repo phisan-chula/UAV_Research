@@ -166,7 +166,8 @@ class GableRoof:
 #######################################################################
 if __name__=="__main__":
     parser = argparse.ArgumentParser(description=\
-            'Detect and estimate 3D coordinate of a Gable-roof Lidar Control Plane(LCP)')
+      'Detect and estimate 3D coordinate of a Gable-roof Lidar Control Plane(LCP)\n'\
+      'P.Santitamnont (c) phisan.chula@gmail.com' ) 
     parser.add_argument( 'YAML',  type=argparse.FileType('r'),
             help="input YAML configuration file for LCP detection and positioning" )
     parser.add_argument('-c','--cache', action='store_true', 
@@ -174,10 +175,14 @@ if __name__=="__main__":
     parser.add_argument('-p','--plot', action='store_true', 
             help='plot 3d LCP target and point cloud')
     parser.add_argument('-l','--lcp', action='store', 
-            help='limit processing only LCP ,otherwise process all LCPs')
+            help='process named LCP ,otherwise process all LCPs')
+    parser.add_argument('-y','--yaml', action='store_true', 
+            help='dump out the ingested YAML file')
+
     ARGS = parser.parse_args()
     gr = GableRoof( ARGS )
     assert( gr.YAML['VERSION']==VERSION ) 
+    if ARGS.yaml: print( gr.YAML )
     lcp = list()   # restructure YAML a bit
     for k,v in gr.YAML['FLIGHT_LINE'].items():
         df = pd.DataFrame( v,  columns=['LCP', 'x','y','azi'] )

@@ -9,7 +9,7 @@ WIDTH : 0.65     # m  of the future board
 LENGTH : 1.220   # m  of the future board
 #
 #
-BUFF_RIDGE : 1.2        # %buffer from actual LCP size
+BUFF_RIDGE : 1.5        # %buffer from actual LCP size
 BUFF_LFRT : [0.1,0.8 ]   # %buffer to the left&right of  LCP ridge line 
 #
 # Lidar sensor response via "pyransac3d"
