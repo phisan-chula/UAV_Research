@@ -16,7 +16,7 @@ FLAG = { 0: 'no positioning', 16: 'single-point mode', 34: 'floating solution',
 
 ################################################################################
 def ReadCameraMRK( MRK_FILE ):
-    HDR = ['PHOTO', 'UTCTimeSec', 'GPS_Week', 'N_CORR', 'E_CORR', 'H_CORR', 
+    HDR = ['EVENT', 'GPSTimeSec', 'GPS_Week', 'N_CORR', 'E_CORR', 'H_CORR', 
              'RT_Lat', 'RT_Lng', 'RT_h', 'Std_N', 'Std_E', 'Std_h', 'Flag' ]
     df = pd.read_csv( MRK_FILE, header=None, names=HDR, delim_whitespace=True )
     def SplitVal( arg ):
@@ -43,40 +43,44 @@ MRKFILE = 'M300_PPK_SBR/Rover/DJI_202211061253_001_Timestamp.MRK'
 TRJFILE = './M300_PPK_SBR/PPK_Trajectory.txt'
 
 dfMRK = ReadCameraMRK( MRKFILE )
-dfMRK = dfMRK[ [ 'PHOTO',  'UTCTimeSec',  'N_CORR',  'E_CORR',  'H_CORR' ] ]
-dfMRK['PHOTO'] = dfMRK['PHOTO'].astype(str)
+dfMRK = dfMRK[ [ 'EVENT',  'GPSTimeSec',  'N_CORR',  'E_CORR',  'H_CORR' ] ]
+dfMRK['EVENT'] = dfMRK['EVENT'].astype(str)
 print( dfMRK[['N_CORR', 'E_CORR', 'H_CORR']].describe() )
 
 dfTRJ = ReadTrajectWP( TRJFILE )
-dfTRJ['PHOTO'] = '_EPOCH_'
+dfTRJ['EVENT'] = 'TRAJECTORY'
 gdfTRJ = gpd.GeoDataFrame( dfTRJ, crs='EPSG:4326', 
         geometry=gpd.points_from_xy( dfTRJ.Longitude, dfTRJ.Latitude) )
-#import pdb ; pdb.set_trace()
 
 ################################################################################
 dfTRJ = pd.concat( [dfTRJ, dfMRK], axis=0, ignore_index=True)
-dfTRJ.set_index( 'UTCTimeSec', drop=True, inplace=True, verify_integrity=True )
+dfTRJ.set_index( 'GPSTimeSec', drop=False, inplace=True, verify_integrity=True )
 dfTRJ.sort_index( axis=0, inplace=True )
-dfTRJ = dfTRJ[[ 'GPSTimeSec','Latitude','Longitude', 'H-Ell','SDHoriz','SDHeight' , 
-                 'Q','PHOTO','N_CORR','E_CORR','H_CORR' ]]
+dfTRJ = dfTRJ[[ 'Latitude','Longitude', 'H-Ell','SDHoriz','SDHeight' , 
+                 'Q','EVENT','N_CORR','E_CORR','H_CORR' ]]
 dfTRJ.interpolate(method='slinear', inplace=True)
+dfPho = dfTRJ[ ~dfTRJ.EVENT.isin( ['TRAJECTORY'] ) ].copy()
+gdfMRK = gpd.GeoDataFrame( dfPho,  crs='EPSG:4326',
+         geometry=gpd.points_from_xy( dfPho.Longitude, dfPho.Latitude ) ).copy()
 
-dfMRK = dfTRJ[ ~dfTRJ.PHOTO.isin( ['_MRK_'] ) ].copy()
 def MakeOffset( row ):
     g = Geod(ellps='WGS84')
-    lng_n, lat_n, _ = g.fwd(row.Longitude, row.Latitude,  0.0, row.N_CORR )
-    lng,lat,_       = g.fwd(lng_n, lat_n, 90.0, row.E_CORR )
-    #import pdb ; pdb.set_trace()
-    return [ lat,lng, row['H-Ell']-row.H_CORR ]
-dfMRK[['Lat_Cam', 'Lng_Cam', 'h_Cam']] = dfMRK.apply( MakeOffset,axis=1, result_type='expand')
-gdfPhoto = gpd.GeoDataFrame( dfMRK, crs='EPSG:4326', 
-               geometry=gpd.points_from_xy( dfMRK.Lng_Cam, dfMRK.Lat_Cam ) )
+    lng_N, lat_N, _ = g.fwd( row.Longitude, row.Latitude, 0.0, row.N_CORR )
+    lng_E, lat_E, _ = g.fwd( row.Longitude, row.Latitude,90.0, row.E_CORR )
+    return [ lat_N,lng_E, row['H-Ell']-row.H_CORR ]
+dfPho[['Lat_EOP', 'Lng_EOP', 'h_EOP']] = dfPho.apply( MakeOffset,axis=1,result_type='expand')
+gdfEOP = gpd.GeoDataFrame( dfPho, crs='EPSG:4326', 
+               geometry=gpd.points_from_xy( dfPho.Lng_EOP, dfPho.Lat_EOP ) ).copy()
+#import pdb ; pdb.set_trace()
 ###################################################################################
 OUT = 'PrecGeoTag'
 print( f'Writing {OUT}+ .gpkg and .csv ...')
+gdfMRK.to_file( OUT+'.gpkg' , driver='GPKG', layer='EventMark' )
 gdfTRJ.to_file( OUT+'.gpkg' , driver='GPKG', layer='Trajectory' )
-gdfPhoto.to_file( OUT+'.gpkg' , driver='GPKG', layer='Photo' )
+gdfEOP.to_file( OUT+'.gpkg' , driver='GPKG', layer='EOP' )
 #####################################################################
-gdfPhoto[ ['PHOTO', 'Lat_Cam', 'Lng_Cam', 'h_Cam' ]].to_csv( OUT+'.csv' , index=False )
-#import pdb ; pdb.set_trace()
+for col in [ 'Lat_EOP', 'Lng_EOP' ]:
+    gdfEOP[col] = gdfEOP[col].map('{:.9f}'.format)
+gdfEOP['h_EOP'] = gdfEOP['h_EOP'].map('{:.3f}'.format)
+gdfEOP[ ['EVENT', 'Lat_EOP', 'Lng_EOP', 'h_EOP' ]].to_csv( OUT+'.csv' , index=False )
 
