@@ -53,6 +53,6 @@
 | max   |      0.490824  |     0.353276    | 1.280000e-01  |
 
 
-*นักวิจัย นายถิรวัฒน์ บรรณากุลพิพัฒน์ Thirawat Bannakulpiphat  (M.Eng Chula)*<br/>
+*นักวิจัย นายถิรวัฒน์ บรรณกุลพิพัฒน์ Thirawat Bannakulpiphat  (M.Eng Chula)*<br/>
 *นักวิจัย รศ.ดร.ไพศาล สันติธรรมนนท์ Phisan Santitamnont  (Dr.-Ing., Leibniz Hannover)*<br/>
 17 พย 2565<br/>
