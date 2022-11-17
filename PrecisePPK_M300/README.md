@@ -20,6 +20,6 @@ RMS Error [m] 0.002358 0.002092 0.009411<br/>
 <br/>
 
 
-*นักวิจัย นายถิระวัฒน์ บรรณากุลพิพัฒน์ (M.Eng Chula)*<br/>
-*นักวิจัย รศ.ดร.ไพศาล สันติธรรมนนท์ (Dr.-Ing., Leibniz Hannover)*<br/>
+*นักวิจัย นายถิรวัฒน์ บรรณากุลพิพัฒน์ Thirawat Bannakulpiphat  (M.Eng Chula)*<br/>
+*นักวิจัย รศ.ดร.ไพศาล สันติธรรมนนท์ Phisan Santitamnont  (Dr.-Ing., Leibniz Hannover)*<br/>
 17 พย 2565<br/>
