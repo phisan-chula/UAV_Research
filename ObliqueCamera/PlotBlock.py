@@ -21,12 +21,13 @@ from Pix4D_Lib import *
 
 ##########################################################################################
 class PlotBlock(Pix4dBlock):
-    def __init__( self, ARGS, PIX4D_PATH ):
-        super().__init__( PIX4D_PATH )
+    def __init__( self, ARGS ):
+        super().__init__( ARGS.block )
         self.ARGS = ARGS
-        dfImg = self.SelectImageByRigOption()  # specified from self.ARGS
-        self.PlotFootPrint( dfImg )  # only selected rig
         self.PlotBlock()
+        dfImg = self.SelectImageByRigOption()  # specified from self.ARGS
+        #import pdb; pdb.set_trace()
+        self.PlotFootPrint( dfImg )  # only selected rig
         if self.ARGS.copy: self.CopyRigImage( dfImg )
 
     def SelectImageByRigOption( self ):
@@ -36,11 +37,11 @@ class PlotBlock(Pix4dBlock):
             return self.dfImage[ self.dfImage.RigName.isin( self.ARGS.rig.split(',')) ]
         if ':' in self.ARGS.rig:
             fr,to = self.ARGS.rig.split(':')
-            return self.dfImage[ self.dfImage.RigName.between( fr,to)]
+            return self.dfImage[ self.dfImage.RigName.between(fr,to, inclusive='both' )]
         return self.dfImage[ self.dfImage.RigName==self.ARGS.rig ]
 
     def PlotBlock( self ):
-        cen = self.dfImage[ self.dfImage.RigPos=='S' ]
+        cen = self.dfImage[ self.dfImage.RigPos==self.CONFIG['RIG_POSITION'][0] ]
         paths = []
         for i in range( len(cen)-1 ):
             paths.append(LineString( [cen.iloc[i].geometry,cen.iloc[i+1].geometry ] ) )    
@@ -58,7 +59,7 @@ class PlotBlock(Pix4dBlock):
         SX,SY = self.CONFIG['SENSOR_SIZE']
         OFFSET = self.CONFIG['COV_TERRAIN'] if self.ARGS.terrain else self.CONFIG['COV_RELATIVE']
         for _,row in dfIMAGE.iterrows():
-            if row.RigPos=='S':
+            if row.RigPos==self.CONFIG['RIG_POSITION'][0]:
                 print( f'Calculation foot-print for rig {row.RigName}' )
             poly = [] 
             for corner in list(box(0,0,SX,SY).exterior.coords):
@@ -89,6 +90,8 @@ class PlotBlock(Pix4dBlock):
 if __name__ == "__main__":
     import argparse
     parser = argparse.ArgumentParser(description=PROG)
+    parser.add_argument( '-b','--block', action='store',
+            help='block path of param files from PIX4D included BLOCK_INFO.toml' )
     parser.add_argument( '-r','--rig', action='store',
             help='rig number to plot or retrieve images XXX or XXX,YYY,ZZZ or XXX:ZZZ '\
                     'if not specified , all images will be plotted')
@@ -97,6 +100,7 @@ if __name__ == "__main__":
     parser.add_argument( '-t','--terrain', action='store_true',
             help='plot image foot-print on the terrain, otherwise plot underneath the sensor' )
     args = parser.parse_args()
-    blk = PlotBlock( args, './CA502_CU_SBR_SmallBlock' )
+    blk = PlotBlock( args )
+    #blk = PlotBlock( args, './ShareUAV_CU_SBR_SmallBlock' )
     print('@@@@@@@@@@@@@@@@@@@@@@@ end @@@@@@@@@@@@@@@@@@@@@@@@@@' )
 

@@ -4,10 +4,10 @@
 #            user supplies necessary configuration data via Tom's Obvious Minimal 
 #            Language (TOML) BLOCK_CONFIG.toml
 # Author : P.Santitamnont (Phisan.Chula@gmail.com)
-# Version : 0.2  ( 2022-12-05 )
+# Version : 0.3  ( 2022-12-14 )
 #
 #
-import shutil
+import shutil,re
 from pathlib import Path
 from shapely.geometry import box,LineString,Polygon
 import numpy as np 
@@ -36,18 +36,27 @@ class Pix4dBlock:
         dfPMat['PMat' ]= dfPMat.apply( MakeMat, axis=1)
         #############################################
         dfJPG = pd.DataFrame( list(PIX4D_PATH.glob('./*/*/*.JPG')), columns=['JPG_Path'] )
-        def MakeJPG( row ):
-            return  [ row[0].stem, row[0].name , row[0].stem[1:], row[0].stem[0] ]
-        dfJPG[ [ 'ImageStem', 'ImageName', 'RigName', 'RigPos' ] ] = \
-                                  dfJPG.apply( MakeJPG, axis=1, result_type='expand') 
+        if len(dfJPG)==0: 
+            print( '***WARING*** no directory of JPG images ...')
         #############################################
         EXT_PAR = list(PIX4D_PATH.glob('./params/*_calibrated_external_camera_parameters.txt'))[0]
         dfExt = pd.read_csv( EXT_PAR,  delim_whitespace=True )
         dfImage = pd.merge( dfExt, dfPMat[[0,'PMat']] , how='inner', left_on='imageName', right_on=0 )
-        dfImage = pd.merge( dfImage, dfJPG , how='inner', left_on='imageName', right_on='ImageName' )
+        #if len(dfJPG)>0:
+        #    dfImage = pd.merge( dfImage, dfJPG , how='inner', left_on='imageName', right_on='ImageName' )
         self.dfImage = gpd.GeoDataFrame( dfImage, crs='EPSG:32647', 
                        geometry=gpd.points_from_xy( dfImage.X, dfImage.Y, dfImage.Z ) )
-        self.dfImage.drop( labels=[0,'imageName'], axis=1, inplace=True )
+        self.dfImage.drop( labels=[0], axis=1, inplace=True )
+        self.dfImage.rename( columns={'imageName': 'ImageName' } ,inplace=True )
+        def MakeRig( row, self ):
+            ImageStem =  row.ImageName.split('.')[0]
+            RigName = re.sub('.*?([0-9]*)$',r'\1',ImageStem)
+            RigPos = ImageStem[0:-len(RigName)] 
+            if RigPos not in self.CONFIG['RIG_POSITION']:
+                raise print(f'***ERROR*** unknown prefix "{ImageStem}" ...')
+            return  [ ImageStem, row.ImageName , RigName, RigPos ]
+        self.dfImage[ [ 'ImageStem', 'ImageName', 'RigName', 'RigPos' ] ] = \
+                       self.dfImage.apply( MakeRig, axis=1, result_type='expand' , args=(self,) ) 
         self.dfImage.sort_values( by=['RigName','RigPos'], inplace=True )
         #############################################
         OFFSET = list( PIX4D_PATH.glob('./params/*_offset.xyz') )[0]
