@@ -1,0 +1,105 @@
+begin camera_parameters SHARE102SPRO265_DOWN_27.0_6000x4000 (RGB)(1)
+ focal_length:                      27.00461988800836010682
+ ppac:                              -0.01324382636529148130 0.00519563278636928950
+ ppbs:                               0 0
+ film_format:                       16.93331999999999837314 25.39997999999999578336
+ lens_distortion_flag:              off
+ io_required:                       yes
+ camera_type:                       frame
+ media_type:                        digital
+ pixel_size:                        4.23332999999999959329 4.23332999999999959329
+ image_size_in_pixels:              4000 6000
+ scanline_orientation:              4
+ photo_coord_sys_orientation:       1
+ photo_coord_sys_origin:            1999.50000000000000000000 2999.50000000000000000000
+ focal_length_calibration_flag:     off
+ calibrated_focal_length_stddev:    0.03
+ ppac_calibration_flag:             off
+ calibrated_ppac_stddevs:           0.003   0.003
+ self_calibration_enabled_params:   0
+ antenna_offsets:                   0   0   0
+end camera_parameters
+begin camera_parameters SHARE102SPRO265_BACK_38.0_6000x4000 (RGB)(2)
+ focal_length:                      38.20348676195953885326
+ ppac:                              -0.08912260787124115513 -0.27760287137429034976
+ ppbs:                               0 0
+ film_format:                       16.93331999999999837314 25.39997999999999578336
+ lens_distortion_flag:              off
+ io_required:                       yes
+ camera_type:                       frame
+ media_type:                        digital
+ pixel_size:                        4.23332999999999959329 4.23332999999999959329
+ image_size_in_pixels:              4000 6000
+ scanline_orientation:              4
+ photo_coord_sys_orientation:       1
+ photo_coord_sys_origin:            1999.50000000000000000000 2999.50000000000000000000
+ focal_length_calibration_flag:     off
+ calibrated_focal_length_stddev:    0.03
+ ppac_calibration_flag:             off
+ calibrated_ppac_stddevs:           0.003   0.003
+ self_calibration_enabled_params:   0
+ antenna_offsets:                   0   0   0
+end camera_parameters
+begin camera_parameters SHARE102SPRO265_FRONT_38.0_6000x4000 (RGB)(3)
+ focal_length:                      38.64057903151113748663
+ ppac:                              -0.00848564661612405402 0.05067064174146548861
+ ppbs:                               0 0
+ film_format:                       16.93331999999999837314 25.39997999999999578336
+ lens_distortion_flag:              off
+ io_required:                       yes
+ camera_type:                       frame
+ media_type:                        digital
+ pixel_size:                        4.23332999999999959329 4.23332999999999959329
+ image_size_in_pixels:              4000 6000
+ scanline_orientation:              4
+ photo_coord_sys_orientation:       1
+ photo_coord_sys_origin:            1999.50000000000000000000 2999.50000000000000000000
+ focal_length_calibration_flag:     off
+ calibrated_focal_length_stddev:    0.03
+ ppac_calibration_flag:             off
+ calibrated_ppac_stddevs:           0.003   0.003
+ self_calibration_enabled_params:   0
+ antenna_offsets:                   0   0   0
+end camera_parameters
+begin camera_parameters SHARE102SPRO265_LEFT_38.0_6000x4000 (RGB)(4)
+ focal_length:                      37.95019242331263598089
+ ppac:                              0.08184474282615167295 -0.32302719518161449042
+ ppbs:                               0 0
+ film_format:                       16.93331999999999837314 25.39997999999999578336
+ lens_distortion_flag:              off
+ io_required:                       yes
+ camera_type:                       frame
+ media_type:                        digital
+ pixel_size:                        4.23332999999999959329 4.23332999999999959329
+ image_size_in_pixels:              4000 6000
+ scanline_orientation:              4
+ photo_coord_sys_orientation:       1
+ photo_coord_sys_origin:            1999.50000000000000000000 2999.50000000000000000000
+ focal_length_calibration_flag:     off
+ calibrated_focal_length_stddev:    0.03
+ ppac_calibration_flag:             off
+ calibrated_ppac_stddevs:           0.003   0.003
+ self_calibration_enabled_params:   0
+ antenna_offsets:                   0   0   0
+end camera_parameters
+begin camera_parameters SHARE102SPRO265_RIGHT_38.0_6000x4000 (RGB)(5)
+ focal_length:                      38.18896686396662687457
+ ppac:                              0.00345937796104241625 -0.30191551051393317184
+ ppbs:                               0 0
+ film_format:                       16.93331999999999837314 25.39997999999999578336
+ lens_distortion_flag:              off
+ io_required:                       yes
+ camera_type:                       frame
+ media_type:                        digital
+ pixel_size:                        4.23332999999999959329 4.23332999999999959329
+ image_size_in_pixels:              4000 6000
+ scanline_orientation:              4
+ photo_coord_sys_orientation:       1
+ photo_coord_sys_origin:            1999.50000000000000000000 2999.50000000000000000000
+ focal_length_calibration_flag:     off
+ calibrated_focal_length_stddev:    0.03
+ ppac_calibration_flag:             off
+ calibrated_ppac_stddevs:           0.003   0.003
+ self_calibration_enabled_params:   0
+ antenna_offsets:                   0   0   0
+end camera_parameters
