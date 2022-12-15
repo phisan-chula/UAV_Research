@@ -1,0 +1,9 @@
+# This is a TOML document
+
+SENSOR_SIZE = [ 6000, 4000 ]
+RIG_POSITION = [ "S", "A", "D", "W", "X" ]
+
+#  coverage of image foot-print at distance off the sensor
+COV_RELATIVE = 10 
+COV_TERRAIN = 210 
+
