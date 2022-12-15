@@ -1,0 +1,21 @@
+begin camera_parameters CA502R_NADIR_28.0_6000x4000 (RGB)(1)
+ focal_length:                      28.05011316081208860851
+ ppac:                              0.34111784927414817714 0.14176314780218185474
+ ppbs:                               0 0
+ film_format:                       15.67999999999999971578 23.51999999999999957367
+ lens_distortion_flag:              off
+ io_required:                       yes
+ camera_type:                       frame
+ media_type:                        digital
+ pixel_size:                        3.91999999999999992895 3.91999999999999992895
+ image_size_in_pixels:              4000 6000
+ scanline_orientation:              4
+ photo_coord_sys_orientation:       1
+ photo_coord_sys_origin:            1999.50000000000000000000 2999.50000000000000000000
+ focal_length_calibration_flag:     off
+ calibrated_focal_length_stddev:    0.03
+ ppac_calibration_flag:             off
+ calibrated_ppac_stddevs:           0.003   0.003
+ self_calibration_enabled_params:   0
+ antenna_offsets:                   0   0   0
+end camera_parameters
