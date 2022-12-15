@@ -32,13 +32,23 @@ class PlotBlock(Pix4dBlock):
 
     def SelectImageByRigOption( self ):
         if self.ARGS.rig is None : 
-            return self.dfImage
-        if ',' in self.ARGS.rig:
-            return self.dfImage[ self.dfImage.RigName.isin( self.ARGS.rig.split(',')) ]
-        if ':' in self.ARGS.rig:
+            df =  self.dfImage
+        elif ',' in self.ARGS.rig:
+            df =  self.dfImage[ self.dfImage.RigName.isin( self.ARGS.rig.split(',')) ]
+        elif ':' in self.ARGS.rig:
             fr,to = self.ARGS.rig.split(':')
-            return self.dfImage[ self.dfImage.RigName.between(fr,to, inclusive='both' )]
-        return self.dfImage[ self.dfImage.RigName==self.ARGS.rig ]
+            df =  self.dfImage[ self.dfImage.RigName.between(fr,to, inclusive='both' )]
+        else: 
+            df = self.dfImage[ self.dfImage.RigName==self.ARGS.rig ]
+        if len(df)==0:
+            pos1 = self.CONFIG['RIG_POSITION']
+            pos2 = list(self.dfImage.RigPos.value_counts().keys())
+            run1 = self.ARGS.rig
+            run2 = self.dfImage.RigName.iloc[ [0, -1] ].to_list()
+            print( f'***WARNING*** expecting rig {pos1} but requesting {pos2}....' )   
+            print( f'***WARNING*** expecting {run1} but argument {run2}.... ' )   
+            raise( '*** TERMINNATE ...')
+        return df
 
     def PlotBlock( self ):
         cen = self.dfImage[ self.dfImage.RigPos==self.CONFIG['RIG_POSITION'][0] ]
@@ -46,6 +56,8 @@ class PlotBlock(Pix4dBlock):
         for i in range( len(cen)-1 ):
             paths.append(LineString( [cen.iloc[i].geometry,cen.iloc[i+1].geometry ] ) )    
         print(f'Plotting Pix4D block {self.BLOCK} ...' )
+        if self.BLOCK.exists(): self.BLOCK.unlink()
+
         dfTraj = gpd.GeoDataFrame( crs='EPSG:32647', geometry=paths  )
         COLS = list( set(cen.columns)-set( ['PMat','JPG_Path' ] ) )
         dfTraj.to_file( self.BLOCK, driver='GPKG', layer='Trajectory' )  

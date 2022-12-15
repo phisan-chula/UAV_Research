@@ -48,6 +48,7 @@ class Pix4dBlock:
                        geometry=gpd.points_from_xy( dfImage.X, dfImage.Y, dfImage.Z ) )
         self.dfImage.drop( labels=[0], axis=1, inplace=True )
         self.dfImage.rename( columns={'imageName': 'ImageName' } ,inplace=True )
+        #import pdb ; pdb.set_trace()
         def MakeRig( row, self ):
             ImageStem =  row.ImageName.split('.')[0]
             RigName = re.sub('.*?([0-9]*)$',r'\1',ImageStem)
