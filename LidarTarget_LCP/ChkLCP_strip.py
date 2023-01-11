@@ -84,7 +84,7 @@ class LidarBlock:
                 f.write( '{}"{}"\n'.format( 4*' ', dflcp.iloc[0].infile ) )
                 for idx,lcp in dflcp.iterrows():
                     f.write( '{} - [ {},{},{},{},{} ]\n'.format( 8*' ', 
-                        lcp.NAME, lcp.Easting, lcp.Northing , lcp.HAE, 99 ) )
+                        lcp.NAME, lcp.Easting, lcp.Northing , lcp.HAE, lcp.AZ ) )
 
 #######################################################################
 #######################################################################
@@ -96,6 +96,5 @@ lb.WriteBlock()
 lb.WriteYAML()
 
 print('******* end of ChkLCP_strip.py ********')
-
-import pdb ; pdb.set_trace()
+#import pdb ; pdb.set_trace()
 
