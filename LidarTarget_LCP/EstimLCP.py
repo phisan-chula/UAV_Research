@@ -176,9 +176,12 @@ if __name__=="__main__":
     parser.add_argument('-l','--lcp', action='store', 
             help='limit processing only LCP ,otherwise process all LCPs')
     ARGS = parser.parse_args()
+    print( ARGS )
     gr = GableRoof( ARGS )
     assert( gr.YAML['VERSION']==VERSION ) 
     lcp = list()   # restructure YAML a bit
+
+    import pdb; pdb.set_trace()
     for k,v in gr.YAML['FLIGHT_LINE'].items():
         df = pd.DataFrame( v,  columns=['LCP', 'x','y','azi'] )
         df['FLIGHT_LINE'] = k
@@ -189,7 +192,6 @@ if __name__=="__main__":
     ##############################################################
     if not Path('./CACHE').exists():
         Path('./CACHE').mkdir(parents=True, exist_ok=True)
-    #import pdb; pdb.set_trace()
     result = list()
     for i,row in dfLCP.iterrows(): 
         print(f'========================== LCP : {row.LCP} ==============================')
