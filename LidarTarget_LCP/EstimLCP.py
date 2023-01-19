@@ -8,6 +8,7 @@
 #  Author: Phisan Santitamnont
 #          Faculty of Engineer, Chulalongkorn University
 #  History : 16 Oct 2022 : initial
+#          : 
 VERSION = "0.3"
 import pandas as pd
 import geopandas as gpd
@@ -25,6 +26,7 @@ plt.switch_backend('TkAgg')
 
 #############################################################################
 XYZ = ['x','y','z'] 
+COL_DXYZ = [ 'Name','x','y','z', 'dx', 'dy', 'dh', 'FlighLine']
 class GableRoof:
     """ Levelled gabel roof estation from lidar point-cloud. User input 
         point-clud fall onto the two planes of gabel roof. Software will
@@ -32,12 +34,64 @@ class GableRoof:
         line segment and its orientation. The centroid of ridge is the solution.
         """
     def __init__(self, ARGS):
+        Path('./CACHE').mkdir(parents=True, exist_ok=True)
         self.ARGS = ARGS
         self.BUFF_CIRC = 2.   # 200% buffered circle 
         self.YAML = yaml.load( ARGS.YAML, Loader=yaml.loader.SafeLoader)
         BAS,WID,LEN = self.YAML['BASE'],self.YAML['WIDTH'],self.YAML['LENGTH']
         self.YAML['HEIGHT'] = np.sqrt( WID**2-(BAS/2)**2 ) 
         self.YAML['RADIUS'] = np.sqrt( (BAS/2)**2+(LEN/2)**2 ) 
+
+        assert( self.YAML['VERSION']==VERSION ) 
+        lcp = list()   # restructure YAML a bit
+        for k,v in self.YAML['FLIGHT_LINE'].items():
+            df = pd.DataFrame( v,  columns=['LCP', 'x','y','h', 'azi'] )
+            df['FLIGHT_LINE'] = k
+            df['FLIGHT_STEM'] = Path(k).stem
+            lcp.append( df )
+        dfLCP = pd.concat( lcp, axis=0, ignore_index=True )
+        if ARGS.strip is not None:
+            dfLCP = dfLCP[dfLCP['FLIGHT_STEM']==ARGS.strip]
+        if ARGS.lcp is not None:
+            dfLCP = dfLCP[dfLCP['LCP']==ARGS.lcp]
+        self.dfLCP = dfLCP
+        if len( self.dfLCP )==0:
+            raise Warning( 'No LCP is selected !!!')
+
+    def IterateLCP(self):
+        result = list()
+        for i,row in self.dfLCP.iterrows(): 
+            print(f'===================== LCP : {row.LCP} =======================')
+            gdfPC, dfRIDGE =  self.DoEstimateLCP( [row.x,row.y,row.azi] , row.FLIGHT_LINE )
+            for side in ('L','R','LR' ):
+                if side == 'LR':
+                    df = dfRIDGE[XYZ].copy()
+                else:
+                    df = dfRIDGE[dfRIDGE.SIDE==side][XYZ].copy()
+                df.sort_values(XYZ, axis=0, ascending=True,inplace=True) # colinear points !
+                dx,dy,dz = (df.iloc[-1]-df.iloc[0])
+                L = np.sqrt( dx**2 + dy**2 + dz**2 )
+                az = np.degrees( divmod( np.arctan2( dx,dy ), 2*np.pi)[1] ) 
+                print( f'{row.LCP} : {side:2s} ridge length = {L:.3f} m, '\
+                         f' az = {az:.1f} deg , slope={dz:+.2f} m')
+            print( f'Input {row.LCP}  L={self.YAML["LENGTH"]} : {row.x:,.3f}, '\
+                   f' {row.y:,.3f}, {row.h:,.3f} m., AZ:{row.azi:.1f} deg')
+            x,y,z = (df.iloc[0]+df.iloc[-1])/2 # from last loop above
+            dxyz = np.array([row.x,row.y,row.h]) -np.array( [x,y,z] )
+            result.append( [ row.LCP, x, y, z, *list(dxyz), Path(row.FLIGHT_LINE).stem ] )
+
+            print( f'Best estimate {row.LCP} : {x:,.3f}, {y:,.3f}, {z:.3f} m')
+            TITLE = f'{row.LCP}@{Path(row.FLIGHT_LINE)}'
+            PLOT_FILE = f'CACHE/{row.LCP}_{Path(row.FLIGHT_LINE).stem}.svg'
+            self.PlotRoof( dfRIDGE[XYZ].mean(),gdfPC,dfRIDGE,
+                            TITLE=TITLE,PLOT_FILE=PLOT_FILE)
+            if ARGS.plot:
+                gr.PlotRoof( dfRIDGE[XYZ].mean(),gdfPC,dfRIDGE,TITLE=TITLE,PLOT_FILE=None)
+
+        dfRESULT = pd.DataFrame( result, columns=COL_DXYZ  )
+        gdfRESULT = gpd.GeoDataFrame( dfRESULT, crs='epsg:32647', 
+                        geometry=gpd.points_from_xy( dfRESULT.x, dfRESULT.y ) )
+        return gdfRESULT
 
     def DoEstimateLCP(self, LCP, FLT_LINE ):
         BAS,WID,LEN = self.YAML['BASE'],self.YAML['WIDTH'],self.YAML['LENGTH']
@@ -173,60 +227,19 @@ if __name__=="__main__":
             help='caching the circled target, for DEBUG only !!!')
     parser.add_argument('-p','--plot', action='store_true', 
             help='plot 3d LCP target and point cloud')
+    parser.add_argument('-s','--strip', action='store', 
+            help='limit processing by specifying strip name')
     parser.add_argument('-l','--lcp', action='store', 
             help='limit processing only LCP ,otherwise process all LCPs')
     ARGS = parser.parse_args()
     print( ARGS )
     gr = GableRoof( ARGS )
-    assert( gr.YAML['VERSION']==VERSION ) 
-    lcp = list()   # restructure YAML a bit
-    #import pdb; pdb.set_trace()
-    for k,v in gr.YAML['FLIGHT_LINE'].items():
-        df = pd.DataFrame( v,  columns=['LCP', 'x','y','h', 'azi'] )
-        df['FLIGHT_LINE'] = k
-        lcp.append( df )
-    dfLCP = pd.concat( lcp, axis=0, ignore_index=True )
-    if ARGS.lcp is not None:
-        dfLCP = dfLCP[dfLCP['LCP']==ARGS.lcp]
-    ##############################################################
-    if not Path('./CACHE').exists():
-        Path('./CACHE').mkdir(parents=True, exist_ok=True)
-    result = list()
-    for i,row in dfLCP.iterrows(): 
-        print(f'========================== LCP : {row.LCP} ==============================')
-        gdfPC, dfRIDGE =  gr.DoEstimateLCP( [row.x,row.y,row.azi] , row.FLIGHT_LINE )
-        for side in ('L','R','LR' ):
-            if side == 'LR':
-                df = dfRIDGE[XYZ].copy()
-            else:
-                df = dfRIDGE[dfRIDGE.SIDE==side][XYZ].copy()
-            df.sort_values(XYZ, axis=0, ascending=True,inplace=True) # colinear points !
-            dx,dy,dz = (df.iloc[-1]-df.iloc[0])
-            L = np.sqrt( dx**2 + dy**2 + dz**2 )
-            az = np.degrees( divmod( np.arctan2( dx,dy ), 2*np.pi)[1] ) 
-            print( f'{row.LCP} : {side:2s} ridge length = {L:.3f} m, '\
-                     f' az = {az:.1f} deg , slope={dz:+.2f} m')
-        print( f'Input {row.LCP}  L={gr.YAML["LENGTH"]} : {row.x:,.3f}, '\
-               f' {row.y:,.3f}, {row.h:,.3f} m., AZ:{row.azi:.1f} deg')
-        x,y,z = (df.iloc[0]+df.iloc[-1])/2 # from last loop above
-        dxyz = np.array([row.x,row.y,row.h]) -np.array( [x,y,z] )
-        #import pdb; pdb.set_trace()
-        result.append( [ row.LCP, x, y, z, *list(dxyz), Path(row.FLIGHT_LINE).stem ] )
-        print( f'Best estimate {row.LCP} : {x:,.3f}, {y:,.3f}, {z:.3f} m')
-        TITLE = f'{row.LCP}@{Path(row.FLIGHT_LINE)}'
-        PLOT_FILE = f'CACHE/{row.LCP}_{Path(row.FLIGHT_LINE).stem}.svg'
-        gr.PlotRoof( dfRIDGE[XYZ].mean(),gdfPC,dfRIDGE,TITLE=TITLE,PLOT_FILE=PLOT_FILE)
-        if ARGS.plot:
-            gr.PlotRoof( dfRIDGE[XYZ].mean(),gdfPC,dfRIDGE,TITLE=TITLE,PLOT_FILE=None)
+    gdfRESULT = gr.IterateLCP()
 
-    import pdb; pdb.set_trace()
-    dfRESULT = pd.DataFrame( result, columns=['Name','x','y','z', 
-                                'dx', 'dy', 'dh', 'FlighLine'] )
-    gdfRESULT = gpd.GeoDataFrame( dfRESULT, crs='epsg:32647', 
-                        geometry=gpd.points_from_xy( dfRESULT.x, dfRESULT.y ) )
+    #import pdb; pdb.set_trace()
     RESULT_FILE =  f'CACHE/{Path(ARGS.YAML.name).stem}_RESULT' 
     print( f'Writing result "{RESULT_FILE}" +[CSV/GPKG]  ...')
-    dfRESULT.to_csv( RESULT_FILE+'.csv', index_label='Index',float_format='%.3f' )
     gdfRESULT.to_file( RESULT_FILE+'.gpkg', driver='GPKG', layer='LCP_FlightLine'  )
+    gdfRESULT[COL_DXYZ].to_csv(RESULT_FILE+'.csv',index_label='Index',float_format='%.3f' )
     #import pdb; pdb.set_trace()
 

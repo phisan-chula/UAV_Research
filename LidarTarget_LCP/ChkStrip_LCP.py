@@ -121,7 +121,7 @@ class LidarBlock:
 parser = argparse.ArgumentParser(description='Process some integers.')
 parser.add_argument('-r', '--reduce', dest='reduce', default=1000, type=int,
     help='reduce number of point-cloud, default 1000-times, suggest 10/100/1000/10000')
-parser.add_argument('-s', '--shrink', dest='shrink', default=-3, type=int,
+parser.add_argument('-s', '--shrink', dest='shrink', default=-5, type=int,
     help='shrink polygon hulling point-cloud by default -3 meter')
 parser.add_argument('-y', '--yaml', dest='yaml', action='store_true',
     help='generate YAML file for later used by EstimLCP.py... ')
