@@ -180,10 +180,9 @@ if __name__=="__main__":
     gr = GableRoof( ARGS )
     assert( gr.YAML['VERSION']==VERSION ) 
     lcp = list()   # restructure YAML a bit
-
-    import pdb; pdb.set_trace()
+    #import pdb; pdb.set_trace()
     for k,v in gr.YAML['FLIGHT_LINE'].items():
-        df = pd.DataFrame( v,  columns=['LCP', 'x','y','azi'] )
+        df = pd.DataFrame( v,  columns=['LCP', 'x','y','h', 'azi'] )
         df['FLIGHT_LINE'] = k
         lcp.append( df )
     dfLCP = pd.concat( lcp, axis=0, ignore_index=True )
@@ -205,17 +204,24 @@ if __name__=="__main__":
             dx,dy,dz = (df.iloc[-1]-df.iloc[0])
             L = np.sqrt( dx**2 + dy**2 + dz**2 )
             az = np.degrees( divmod( np.arctan2( dx,dy ), 2*np.pi)[1] ) 
-            print( f'{row.LCP} : {side:2s} ridge length = {L:.3f} m,  az = {az:.1f} deg , slope={dz:+.2f} m')
-        print( f'Input {row.LCP}  L={gr.YAML["LENGTH"]} : {row.x:,.3f}, {row.y:,.3f} m  AZ:{row.azi:.1f} deg')
+            print( f'{row.LCP} : {side:2s} ridge length = {L:.3f} m, '\
+                     f' az = {az:.1f} deg , slope={dz:+.2f} m')
+        print( f'Input {row.LCP}  L={gr.YAML["LENGTH"]} : {row.x:,.3f}, '\
+               f' {row.y:,.3f}, {row.h:,.3f} m., AZ:{row.azi:.1f} deg')
         x,y,z = (df.iloc[0]+df.iloc[-1])/2 # from last loop above
-        result.append( [ row.LCP, x, y, z, Path(row.FLIGHT_LINE).stem ] )
+        dxyz = np.array([row.x,row.y,row.h]) -np.array( [x,y,z] )
+        #import pdb; pdb.set_trace()
+        result.append( [ row.LCP, x, y, z, *list(dxyz), Path(row.FLIGHT_LINE).stem ] )
         print( f'Best estimate {row.LCP} : {x:,.3f}, {y:,.3f}, {z:.3f} m')
         TITLE = f'{row.LCP}@{Path(row.FLIGHT_LINE)}'
         PLOT_FILE = f'CACHE/{row.LCP}_{Path(row.FLIGHT_LINE).stem}.svg'
         gr.PlotRoof( dfRIDGE[XYZ].mean(),gdfPC,dfRIDGE,TITLE=TITLE,PLOT_FILE=PLOT_FILE)
         if ARGS.plot:
             gr.PlotRoof( dfRIDGE[XYZ].mean(),gdfPC,dfRIDGE,TITLE=TITLE,PLOT_FILE=None)
-    dfRESULT = pd.DataFrame( result, columns=['Name','x','y','z', 'FlighLine'] )
+
+    import pdb; pdb.set_trace()
+    dfRESULT = pd.DataFrame( result, columns=['Name','x','y','z', 
+                                'dx', 'dy', 'dh', 'FlighLine'] )
     gdfRESULT = gpd.GeoDataFrame( dfRESULT, crs='epsg:32647', 
                         geometry=gpd.points_from_xy( dfRESULT.x, dfRESULT.y ) )
     RESULT_FILE =  f'CACHE/{Path(ARGS.YAML.name).stem}_RESULT' 
