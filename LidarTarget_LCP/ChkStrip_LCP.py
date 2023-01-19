@@ -29,18 +29,12 @@ THRESH    : 0.05   # meter
 MAXITER   : 1000
 '''
 class LidarBlock:
-    def __init__(self, FILE_LAS, args):
+    def __init__(self, WILD_LAS, args):
+        self.WILD_LAS = WILD_LAS
         self.ARGS = args
-        FILE_RTK = '**/LCP_RTKh.csv' 
+        dfLCP = self.CreateLCP()
         Path('./CACHE').mkdir(parents=True, exist_ok=True)
-
-        dfStrip = self.CreateStrip( FILE_LAS )
-        LCP_RTK = list(Path( FILE_LAS ).parents[1].glob(FILE_RTK))
-        assert( len(LCP_RTK)==1 )
-        dfLCP = pd.read_csv( LCP_RTK[0] )
-        dfLCP['NAME'] = dfLCP['NAME'].str.strip() 
-        dfLCP = gpd.GeoDataFrame( dfLCP, crs='EPSG:32647', 
-                geometry=gpd.points_from_xy( dfLCP.Easting, dfLCP.Northing ) )
+        dfStrip = self.CreateStrip( )
         self.dfStripLCP = gpd.sjoin( dfStrip, dfLCP, how='inner', predicate='intersects' )
         self.dfStripLCP.reset_index( drop=True, inplace=True )
         self.dfStrip = dfStrip
@@ -50,7 +44,25 @@ class LidarBlock:
         print( f'Number of LCP in strip : {nLCP_Strip}')
         LCP_strip = self.dfStripLCP['NAME'].unique()
         self.dfLCP_strip = self.dfLCP[self.dfLCP.NAME.isin( LCP_strip ) ].copy()
-        #import pdb ; pdb.set_trace()
+
+    def CreateLCP( self ):
+        FILE_LCP = '**/LCP_RTKh.csv','**/LCP_ORIENT.csv' 
+        print( f'Prepare LCP from {FILE_LCP}... ' )
+        dfs = list()
+        for f_lcp in FILE_LCP: 
+            f_lcp = list(Path( self.WILD_LAS ).parents[1].glob(f_lcp))
+            assert( len(f_lcp)==1 )
+            try:
+                df =  pd.read_csv( f_lcp[0] )
+                df['NAME'] = df['NAME'].str.strip() 
+                dfs.append( df )
+            except:
+                print(f'***ERROR*** try to read {f_lcp} ...')
+        df = pd.merge(dfs[0], dfs[1], on='NAME' , how='inner', copy=True)
+        print( df )
+        df = gpd.GeoDataFrame( df,  crs='EPSG:32647', 
+                geometry=gpd.points_from_xy( df.Easting, df.Northing ) )
+        return df
 
     def CreateHull(self, INFILE ):
         # Open the point cloud file using laspy
@@ -63,14 +75,21 @@ class LidarBlock:
         npnt = len(hull.exterior.coords)
         return hull,npnt
 
-    def CreateStrip(self, PATTERN ):
+    def CreateStrip(self):
         data =list()
-        for INFILE in sorted( Path('.').glob( PATTERN) ):
+        LAS = sorted( Path('.').glob( self.WILD_LAS) )
+        if len(LAS)==0: 
+            raise Warning(f'***ERROR*** no LAS from "{PATTERN}" ...')
+        LIMIT = self.ARGS.limit
+        for INFILE in LAS:
             hull,npnt = self.CreateHull( INFILE )
             print('Creating hull from strip {} with {} vertices'.\
                     format(INFILE, npnt))
             data.append( [str(INFILE),INFILE.stem,npnt,hull.buffer(self.ARGS.shrink) ] )
-            #if len(data)==1: break
+            if LIMIT==1: 
+                break
+            else: 
+                LIMIT -= 1
         df = pd.DataFrame( data , columns=['infile', 'strip', 'npnt', 'geometry'] )
         gdf = gpd.GeoDataFrame( df, crs='EPSG:32647', geometry=df.geometry )
         return gdf
@@ -106,11 +125,13 @@ parser.add_argument('-s', '--shrink', dest='shrink', default=-3, type=int,
     help='shrink polygon hulling point-cloud by default -3 meter')
 parser.add_argument('-y', '--yaml', dest='yaml', action='store_true',
     help='generate YAML file for later used by EstimLCP.py... ')
+parser.add_argument('-l', '--limit', dest='limit', default=-1, type=int, 
+    help='limit only first n-files !!! FOR DEBUG !!!')
 
 args = parser.parse_args()
 print( args )
 
-FILE_LAS = './Data/AA450/Las File/AA450-*.las'
+FILE_LAS = './Data/AA450/LasFile/AA450-*.las'
 
 lb = LidarBlock( FILE_LAS, args )
 lb.WriteBlock()
