@@ -30,6 +30,7 @@ def ReadCameraMRK( MRK_FILE ):
             return float( val ) 
     for col in ['N_CORR','E_CORR','H_CORR','RT_Lat','RT_Lng','RT_h','Std_N','Std_E' ]:
         df[col] = df[col].apply( SplitVal )
+    #import pdb ; pdb.set_trace()
     return df
 
 ################################################################################
@@ -68,6 +69,12 @@ print( dfMRK[['N_CORR', 'E_CORR', 'H_CORR']].describe() )
 dfTRJ['EVENT'] = 'TRAJECTORY'
 gdfTRJ = gpd.GeoDataFrame( dfTRJ, crs='EPSG:4326', 
         geometry=gpd.points_from_xy( dfTRJ.Longitude, dfTRJ.Latitude) )
+trj_lin = list()
+for i in range( len(gdfTRJ)-1 ):
+    p,q = gdfTRJ.iloc[i], gdfTRJ.iloc[i+1]
+    trj_lin.append( LineString( [ p.geometry, q.geometry ] ) )
+gdfTRJ_LIN = gpd.GeoDataFrame( crs='EPSG:4326', geometry=trj_lin ) 
+#import pdb ; pdb.set_trace()
 
 ################################################################################
 dfTRJ = pd.concat( [dfTRJ, dfMRK], axis=0, ignore_index=True)
@@ -86,13 +93,14 @@ def MakeOffset( row ):
 dfPho[['Lat_EOP', 'Lng_EOP', 'h_EOP']] = dfPho.apply( MakeOffset,axis=1,result_type='expand')
 gdfEOP = gpd.GeoDataFrame( dfPho, crs='EPSG:4326', 
                geometry=gpd.points_from_xy( dfPho.Lng_EOP, dfPho.Lat_EOP ) ).copy()
-#import pdb ; pdb.set_trace()
 ###################################################################################
 pathlib.Path('./CACHE').mkdir(parents=True, exist_ok=True)
 OUT = './CACHE/PrecGeoTag'
 print( f'Writing {OUT}+ .gpkg and .csv ...')
+gdfTRJ.to_file(     OUT+'.gpkg' , driver='GPKG', layer='Traj_Point' )
+gdfTRJ_LIN.to_file( OUT+'.gpkg' , driver='GPKG', layer='Traj_line' )
+
 gdfMRK.to_file( OUT+'.gpkg' , driver='GPKG', layer='EventMark' )
-gdfTRJ.to_file( OUT+'.gpkg' , driver='GPKG', layer='Trajectory' )
 gdfEOP.to_file( OUT+'.gpkg' , driver='GPKG', layer='EOP' )
 #####################################################################
 for col in [ 'Lat_EOP', 'Lng_EOP' ]:
