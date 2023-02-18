@@ -50,12 +50,10 @@ class LidarBlock:
         print( f'Prepare LCP from {FILE_LCP}... ' )
         dfs = list()
         for f_lcp in FILE_LCP: 
-            f_lcp_ = list(Path( self.WILD_LAS ).parents[1].glob(f_lcp))
-            if len(f_lcp_)!=1:
-                print( f'***ERROR*** try to access "{f_lcp}"...' )
-                raise
+            f_lcp = list(Path( self.WILD_LAS ).parents[1].glob(f_lcp))
+            assert( len(f_lcp)==1 )
             try:
-                df =  pd.read_csv( f_lcp_[0] )
+                df =  pd.read_csv( f_lcp[0] )
                 df['NAME'] = df['NAME'].str.strip() 
                 dfs.append( df )
             except:
@@ -120,11 +118,10 @@ class LidarBlock:
 #######################################################################
 #######################################################################
 #######################################################################
-parser = argparse.ArgumentParser(description='Process some integers.')
-
-parser.add_argument( 'LAS_PATTERN',  type=str,
-    help='input LAS_PATTERN  "./Data/AA450/LasFile/AA450-*.las"' )
-
+parser = argparse.ArgumentParser(description=
+''' Read lidar by flight-strip and analyze if any LCP falls on any
+    flight-strip, then write the result in YAML for processing in 
+    further step with EstimLCP.py. (P.Santitamnont,Chula.Unive Feb,2023''')
 parser.add_argument('-r', '--reduce', dest='reduce', default=1000, type=int,
     help='reduce number of point-cloud, default 1000-times, suggest 10/100/1000/10000')
 parser.add_argument('-s', '--shrink', dest='shrink', default=-5, type=int,
@@ -133,13 +130,13 @@ parser.add_argument('-y', '--yaml', dest='yaml', action='store_true',
     help='generate YAML file for later used by EstimLCP.py... ')
 parser.add_argument('-l', '--limit', dest='limit', default=-1, type=int, 
     help='limit only first n-files !!! FOR DEBUG !!!')
+
 args = parser.parse_args()
 print( args )
 
-#import pdb; pdb.set_trace()
-#FILE_LAS = './Data/AA450/LasFile/AA450-*.las'
+FILE_LAS = './AA450/LasFile/AA450-*.las'
 
-lb = LidarBlock( args.LAS_PATTERN, args )
+lb = LidarBlock( FILE_LAS, args )
 lb.WriteBlock()
 if args.yaml :
     lb.WriteYAML()
