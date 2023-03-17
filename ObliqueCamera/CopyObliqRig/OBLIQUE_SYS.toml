@@ -1,0 +1,16 @@
+# this is a TOML document
+
+[model]
+
+[model.SHARE_V1]
+PREFIX = [ '8down', '8left', '8front', '8back', '8right' ]
+NDIGIT = 5
+
+[model.SHARE_V3]
+PREFIX = [ 'down', 'left', 'front', 'back', 'right' ]
+NDIGIT = 5
+
+[model.CA502]
+PREFIX = [ 'S', 'A', 'D', 'X', 'W' ]
+NDIGIT = 5
+
