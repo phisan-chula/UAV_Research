@@ -1,0 +1,19 @@
+# this is a TOML document
+
+[model]
+
+[model.102SPRO]
+FOLDER = [ '8down', '8left', '8front', '8back', '8right' ]
+RIGPOS = [ 'down', 'left', 'front', 'back', 'right' ]
+NDIGIT = 5
+
+[model.PSDK_102S_V3]
+FOLDER = [ 'down', 'left', 'front', 'back', 'right' ]
+RIGPOS = [ 'down', 'left', 'front', 'back', 'right' ]
+NDIGIT = 5
+
+[model.CA502]
+FOLDER = [ 'S', 'A', 'D', 'X', 'W' ]
+RIGPOS = [ 'down', 'left', 'front', 'back', 'right' ]
+NDIGIT = 5
+

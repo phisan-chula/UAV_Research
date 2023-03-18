@@ -1,0 +1,30 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<OpticalProperties version="1.0">
+  <Id>4</Id>
+  <Name>x</Name>
+  <Description />
+  <Directory />
+  <ImageDimensions>
+    <Width>6144</Width>
+    <Height>4096</Height>
+  </ImageDimensions>
+  <CameraModelType>Perspective</CameraModelType>
+  <CameraModelBand>Visible</CameraModelBand>
+  <SensorSize>23.1</SensorSize>
+  <FocalLength>25.2466005859375</FocalLength>
+  <Distortion>
+    <K1>-0.05143006</K1>
+    <K2>0.08576801</K2>
+    <K3>-0.04231444</K3>
+    <P1>-0.00045888</P1>
+    <P2>0.00023017</P2>
+    <Direct>true</Direct>
+  </Distortion>
+  <PrincipalPoint>
+    <X>3118.58</X>
+    <Y>2059.16</Y>
+  </PrincipalPoint>
+  <AspectRatio>1</AspectRatio>
+  <Skew>0</Skew>
+  <Exif />
+</OpticalProperties>
