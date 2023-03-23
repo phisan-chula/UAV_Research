@@ -58,4 +58,5 @@
 
 *นักวิจัย นายถิรวัฒน์ บรรณกุลพิพัฒน์ Thirawat Bannakulpiphat  (M.Eng Chula)*<br/>
 *นักวิจัย รศ.ดร.ไพศาล สันติธรรมนนท์ Phisan Santitamnont  (Dr.-Ing., Leibniz Hannover)*<br/>
-17 พย 2565<br/>
+เริ่มต้น 17 พย 2565<br/>
+แก้ใข 23 มีค 2566<br/>
