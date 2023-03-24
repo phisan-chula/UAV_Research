@@ -8,17 +8,17 @@
 import pandas as pd
 import geopandas as gpd
 import fiona
-import shutil
+import shutil,os
 from pathlib import Path
 import exifread
 import argparse
 import tomli
 
 class ObliqueBlock:
-    def __init__(self, ARGS ):
-        with open("OBLIQUE_SYS.toml", mode="rb") as fp:
-            self.TOML = tomli.load(fp)
+    def __init__(self, ARGS, CONFIG ):
+        #import pdb; pdb.set_trace()
         self.ARGS = ARGS
+        self.CONFIG = CONFIG
         self.CACHE = Path('./CACHE')
         self.CACHE.mkdir(parents=True, exist_ok=True)
         dfPHO = self.HarvestPhoto( ARGS.FOLDER )
@@ -35,10 +35,10 @@ class ObliqueBlock:
         return latlng
 
     def HarvestPhoto(self, DIR ):
-        FOLDER = self.TOML['model'][ARGS.model]['FOLDER']
-        RIGPOS = self.TOML['model'][ARGS.model]['RIGPOS']
+        FOLDER = self.CONFIG['model'][ARGS.model]['FOLDER']
+        RIGPOS = self.CONFIG['model'][ARGS.model]['RIGPOS']
         LUT = dict( zip( FOLDER, RIGPOS )  )
-        NDIGIT = self.TOML['model'][ARGS.model]['NDIGIT']
+        NDIGIT = self.CONFIG['model'][ARGS.model]['NDIGIT']
         jpegs = list( DIR.glob( '**/*.JPG' ) )
         df = pd.DataFrame( jpegs, columns=['PathJPEG'] )
         def MakePath( row, LUT, NDIGIT ):
@@ -47,7 +47,7 @@ class ObliqueBlock:
             tags = exifread.process_file(f)
             model = tags['Image Model'].values
             lat,lng = self._getLL( tags )
-            rig_struct = self.TOML['model'][ARGS.model]
+            rig_struct = self.CONFIG['model'][ARGS.model]
             folder = row.PathJPEG.parents[0].stem
             if folder not in rig_struct['FOLDER']:
                 raise Warning( f'{folder} not in rig structure ')
@@ -102,13 +102,18 @@ class ObliqueBlock:
 ##############################################################
 #LOG_FILE = 'TransformedPOS8.txt'
 #ROI_FILE = 'ROI.geojson'
+OBQ_SYS = Path( os.getcwd() ).joinpath( "OBLIQUE_SYS.toml" )
+with open( OBQ_SYS, mode="rb") as fp:
+    CONFIG = tomli.load(fp)
 
+import pdb; pdb.set_trace()
+models = list( CONFIG['model'].keys() )
 parser = argparse.ArgumentParser( description='Read oblique block, plot GPKG and '\
         'copy photos within ROI to another directory' )
 parser.add_argument("FOLDER", help="folder of mission log file include folders of oblique images",
                     type=Path )
-parser.add_argument("-m", "--model", dest='model', help="oblique camera [ CA502, SHARE_V1, SHARE_V3 ]",
-                           ) 
+parser.add_argument("-m", "--model", dest='model', required=True, 
+        help=f"oblique camera {models:} ") 
 parser.add_argument("-r", "--roi", dest='FILE_ROI', help="input ROI in geojason format",
                     type=argparse.FileType('r'))
 parser.add_argument("-c", "--copy", action='store_true', help="do copying files" )
@@ -116,7 +121,7 @@ parser.add_argument("-c", "--copy", action='store_true', help="do copying files"
 ARGS = parser.parse_args()
 print( ARGS )
 
-o_blk = ObliqueBlock( ARGS )
+o_blk = ObliqueBlock( ARGS, CONFIG )
 MODEL = o_blk.TOML['model'].keys()
 o_blk.Step1_CheckPlot()
 
